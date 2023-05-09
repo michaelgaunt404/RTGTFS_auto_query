@@ -1,10 +1,8 @@
-name: Query CT OBS Systems
+name: Query CT OBS Systems_newwwww
 
 on:
   push:
-    branches: [main]
-  schedule:
-    - cron: "0 * * * *"
+    branches: [master]
 
 jobs:
   setup:
