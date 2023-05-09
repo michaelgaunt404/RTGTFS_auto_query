@@ -37,35 +37,42 @@ url_vp = 'http://s3.amazonaws.com/commtrans-realtime-prod/vehiclepositions_pb.js
 url_alerts = 'http://s3.amazonaws.com/commtrans-realtime-prod/alerts_pb.json'
 
 query_rtgtfs_json = function(url, time_limit, interval) {
-
   temp_file = tempfile(fileext = ".csv")
-
   start_time = str_remove_all(Sys.time(), "[:punct:]") %>%
     str_replace_all(" ", "_")
-
   cat("Reading JSON data from", url, "\n")
 
   for (i in 1:(time_limit/interval)) {
-    json_data = jsonlite::fromJSON(url, simplifyVector = T) %>%
-      .[['entity']] %>%
-      jsonlite::flatten() %>%
-      data.frame()
-
-    json_data_names = names(json_data)
-
-    readr::write_csv(json_data, temp_file, append = T)
-
-    cat("Appended data to temporary file at", Sys.time(), "\n")
+    tryCatch({
+      json_data = jsonlite::fromJSON(url, simplifyVector = T) %>%
+        .[['entity']] %>%
+        jsonlite::flatten() %>%
+        data.frame()
+      json_data_names = names(json_data)
+      readr::write_csv(json_data, temp_file, append = T)
+      cat("Appended data to temporary file at", Sys.time(), "\n")
+    }, error = function(e) {
+      cat("Error:", conditionMessage(e), "\n")
+      cat("Skipping iteration", i, "\n")
+    })
 
     Sys.sleep(interval)
   }
 
   cat("Query process complete. Processing JSON data...\n")
+  full_queired_data = tryCatch({
+    read.csv(temp_file) %>%
+      set_names(json_data_names)
+  }, error = function(e) {
+    cat("Error while processing CSV:", conditionMessage(e), "\n")
+    NULL
+  })
 
-  full_queired_data = read.csv(temp_file) %>%
-    set_names(json_data_names)
-
-  saveRDS(full_queired_data, here::here("data", str_glue('data_query_{start_time}.rds')))
+  if (!is.null(full_queired_data)) {
+    saveRDS(full_queired_data, here::here("data", str_glue('data_query_{start_time}.rds')))
+  } else {
+    cat("Query process failed, no data to save.\n")
+  }
 
   # delete the temporary file
   file.remove(temp_file)
@@ -75,7 +82,7 @@ query_rtgtfs_json = function(url, time_limit, interval) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # time_limit <- 3600/4 # query for 15 mins
-time_limit = 200
+time_limit = 60
 interval = 10 # append to file every minute
 
 hours = .5

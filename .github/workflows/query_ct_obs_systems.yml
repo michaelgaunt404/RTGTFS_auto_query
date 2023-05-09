@@ -21,7 +21,7 @@ jobs:
           git config --local user.name github-actions
           git config --local user.email "actions@github.com"
           git status
-          git add output/*
+          git add data/*
           git commit -am "commit on $(date)"
           git push origin main
         env:
