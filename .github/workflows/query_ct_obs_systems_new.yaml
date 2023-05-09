@@ -1,7 +1,13 @@
 name: Query CT OBS Systems
-on: push
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 * * * *"
+
 jobs:
-  render:
+  setup:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,6 +20,26 @@ jobs:
           install.packages("renv", type = "win.binary")
           renv::restore(prompt = F)
         shell: Rscript {0}
+      - name: Cache environment
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ env.RENV_PATH }}
+          key: ${{ runner.os }}-renv-${{ env.RENV_PATH_HASH }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
+
+  run:
+    runs-on: windows-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v2
+      - name: Restore environment
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ env.RENV_PATH }}
+          key: ${{ runner.os }}-renv-${{ env.RENV_PATH_HASH }}
       - name: Script
         run: Rscript dev_pb_query_process.R
       - name: Commit files
@@ -21,8 +47,8 @@ jobs:
           git config --local user.name github-actions
           git config --local user.email "actions@github.com"
           git status
-          git add -A .
-          git commit -am "query complete $(date)"
+          git add data/*
+          git commit -am "commit on $(date)"
           git push origin main
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
