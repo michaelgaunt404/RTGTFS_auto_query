@@ -1,0 +1,29 @@
+name: Query CT OBS Systems
+on: push
+jobs:
+  render:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+      - name: Set up pandoc
+        uses: r-lib/actions/setup-pandoc@v2-branch
+      - name: Install dependencies
+        run: |
+          install.packages("renv", type = "win.binary")
+          renv::restore(prompt = F)
+        shell: Rscript {0}
+      - name: Script
+        run: Rscript dev_pb_query_process.R
+      - name: Commit files
+        run: |
+          git config --local user.name github-actions
+          git config --local user.email "actions@github.com"
+          git status
+          git add output/*
+          git commit -am "commit on $(date)"
+          git push origin main
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions

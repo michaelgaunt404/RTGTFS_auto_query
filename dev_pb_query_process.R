@@ -71,7 +71,7 @@ query_rtgtfs_json = function(url, time_limit, interval) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # time_limit <- 3600/4 # query for 15 mins
-time_limit = 10
+time_limit = 200
 interval = 10 # append to file every minute
 
 hours = .5
