@@ -16,7 +16,11 @@
 #content in this section should be removed if in production - ok for dev
 # library(gauntlet)
 library(here)
-library(tidyverse)
+library(magrittr)
+library(stringr)
+library(readr)
+library(purrr)
+library(dplyr)
 library(jsonlite)
 
 #import data====================================================================
