@@ -85,8 +85,8 @@ for (i in 1:(hours*4)){
 #
 # saverd
 #
-# temp_data %>%
-#   saveRDS("temp_rds")
+temp_data %>%
+  saveRDS("temp_rds")
 #
 #
 # colnames(temp_data) = names(json_data)
@@ -104,35 +104,45 @@ for (i in 1:(hours*4)){
 #
 # library(sf)
 #
-# temp_data %>%
-#   # filter(str_detect(id, "_15109")) %>%
-#   # filter(vehicle.timestamp == 1683572554) %>%
-#   filter(vehicle.trip.route_id == 101) %>%
-#   filter(vehicle.current_status == "IN_TRANSIT_TO") %>%
-#   arrange(vehicle.trip.route_id, vehicle.vehicle.id, id) %>%
-#   group_by(vehicle.trip.route_id, vehicle.vehicle.id, vehicle.trip.trip_id) %>%
-#   mutate(date_time = #gsub('_.*', "\\1", 1683572554)
-#          vehicle.timestamp %>%
-#            as.numeric() %>%
-#            lubridate::as_datetime() %>%
-#            lubridate::with_tz("US/Pacific")) %>%
-#   mutate(datetime_diff = as.numeric(date_time-lag(date_time))) %>%
-#   ungroup() %>%
-#   data.frame() %>%
-#   filter(datetime_diff != 0) %>%
-#   sf::st_as_sf(coords = c('vehicle.position.longitude', 'vehicle.position.latitude'), crs = 4326) %>%
-#   sf::st_transform(32610) %>%
-#   gauntlet::st_extract_coords() %>%
-#   group_by(vehicle.trip.route_id, vehicle.vehicle.id, vehicle.trip.trip_id) %>%
-#   mutate(lon_diff = lon-lag(lon)
-#          ,lat_diff = lat-lag(lat)
-#          ,ttl_diff = sqrt(lon_diff**2 + lat_diff**2)
-#          ,speed_avg = (ttl_diff/datetime_diff)*2.236936) %>%
-#   ungroup() %>%
-#   sf::st_transform(4326) %>%
-#   st_jitter() %>%
-#   mapview::mapview(#zcol = "vehicle.timestamp"
-#                    zcol = "speed_avg")
+
+temp_data = read.csv("temp_1236.csv")
+
+temp_data_1 = readRDS("data/data_query_20230509_113017.rds")
+
+colnames(temp_data) = colnames(temp_data_1)
+
+item = temp_data %>%
+  # filter(str_detect(id, "_15109")) %>%
+  # filter(vehicle.timestamp == 1683572554) %>%
+  filter(vehicle.trip.route_id == 101) %>%
+  filter(vehicle.current_status == "IN_TRANSIT_TO") %>%
+  arrange(vehicle.trip.route_id, vehicle.vehicle.id, id) %>%
+  group_by(vehicle.trip.route_id, vehicle.vehicle.id, vehicle.trip.trip_id) %>%
+  mutate(date_time = #gsub('_.*', "\\1", 1683572554)
+         vehicle.timestamp %>%
+           as.numeric() %>%
+           lubridate::as_datetime() %>%
+           lubridate::with_tz("US/Pacific")) %>%
+  mutate(datetime_diff = as.numeric(date_time-lag(date_time))) %>%
+  ungroup() %>%
+  data.frame() %>%
+  filter(datetime_diff != 0) %>%
+  sf::st_as_sf(coords = c('vehicle.position.longitude', 'vehicle.position.latitude'), crs = 4326) %>%
+  sf::st_transform(32610) %>%
+  gauntlet::st_extract_coords() %>%
+  group_by(vehicle.trip.route_id, vehicle.vehicle.id, vehicle.trip.trip_id) %>%
+  mutate(lon_diff = lon-lag(lon)
+         ,lat_diff = lat-lag(lat)
+         ,ttl_diff = sqrt(lon_diff**2 + lat_diff**2)
+         ,speed_avg = (ttl_diff/datetime_diff)*2.236936) %>%
+  ungroup() %>%
+  sf::st_transform(4326) %>%
+  st_jitter() %>%
+  mapview::mapview(#zcol = "vehicle.timestamp"
+                   zcol = "speed_avg")
+
+item@map %>%
+  htmlwidgets::saveWidget("quick_map.html")
 
 
 #script end=====================================================================
