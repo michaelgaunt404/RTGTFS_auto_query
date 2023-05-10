@@ -23,7 +23,7 @@ jobs:
           git status
           git add -A .
           git commit -am "query complete $(date)"
-          git push origin main
+          git push origin master
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
           username: github-actions
