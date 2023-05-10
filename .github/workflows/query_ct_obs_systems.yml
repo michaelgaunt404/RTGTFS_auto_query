@@ -25,5 +25,5 @@ jobs:
           git commit -am "query complete $(date)"
           git push origin master
         env:
-          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          REPO_KEY: ${{secrets.GAUNT_PUSH_TOKEN_1}}
           username: github-actions
